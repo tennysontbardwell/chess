@@ -1,28 +1,56 @@
 package Tennyson_T_Bardwell.BasicChessGame.view;
 
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
+import Tennyson_T_Bardwell.BasicChessGame.model.Board;
+import Tennyson_T_Bardwell.BasicChessGame.model.Board.Tile;
+import Tennyson_T_Bardwell.BasicChessGame.model.Coordinate;
+import javafx.beans.property.Property;
+import javafx.scene.Group;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Polygon;
+import javafx.scene.shape.Rectangle;
 
 public class GamePane {
-	public GamePane(Pane primaryPane) {
-		setUpGame(primaryPane);
-		primaryPane.widthProperty().addListener(e -> setUpGame(primaryPane));
-		primaryPane.heightProperty().addListener(e -> setUpGame(primaryPane));
+	private Pane primaryPane;
+	private Board board;
+	private Pane boardPane;
+
+	private double[] boardSize;
+	private double[] tileSize;
+
+	public GamePane(Pane primaryPane, Board board) {
+		assert (board != null);
+		this.board = board;
+		this.primaryPane = primaryPane;
+		setUpGame();
+		primaryPane.widthProperty().addListener(e -> setUpGame());
+		primaryPane.heightProperty().addListener(e -> setUpGame());
 	}
 
-	private void setUpGame(Pane primaryPane) {
+	/** Sets up the game board in the {@link #primaryPane} from scratch,
+	 * clearing the previous contents if necessary. It adds all drag handlers,
+	 * deals with the size of the screen, etc. */
+	private void setUpGame() {
 		primaryPane.getChildren().clear();
-		double boardSize[] = getBoardSize(primaryPane);
+		boardSize = getBoardSize(primaryPane);
 		double[] offset = getCenteredBoardCorner(primaryPane, boardSize);
-		Canvas c = new Canvas(boardSize[0], boardSize[1]);
-		primaryPane.getChildren().add(c);
-		c.setLayoutX(offset[0]);
-		c.setLayoutY(offset[1]);
-		GraphicsContext gc = c.getGraphicsContext2D();
-		gc.setFill(Color.RED);
-		gc.fillRect(0, 0, boardSize[0], boardSize[1]);
+		boardPane = new Pane();
+		boardPane.setPrefSize(boardSize[0], boardSize[1]);
+		primaryPane.getChildren().add(boardPane);
+		boardPane.setLayoutX(offset[0]);
+		boardPane.setLayoutY(offset[1]);
+		tileSize = tileSize(boardSize);
+		drawAllTiles();
+	}
+
+	/** Draws all the tiles on the game board */
+	private void drawAllTiles() {
+		for (int x = 0; x < 8; x++) {
+			for (int y = 0; y < 8; y++) {
+				Coordinate coord = new Coordinate(x, y);
+				drawTile(coord, getTileLoc(coord, tileSize));
+			}
+		}
 	}
 
 	/** Gets the size of the game board based on the size of the pane dedicated
@@ -51,5 +79,52 @@ public class GamePane {
 		double extraWidth = p.getWidth() - boardSize[0];
 		double extraHeight = p.getHeight() - boardSize[1];
 		return new double[] { extraWidth / 2, extraHeight / 2 };
+	}
+
+	/** Calculates the size of tiles on the board such when all tiles are drawn
+	 * every pixel of the game board is dedicated to exactly one tile.
+	 * 
+	 * @param boardSize
+	 *            Pixels size of the board in form {width, height}
+	 * @return Size of each tile in form {width, hight} */
+	private static double[] tileSize(double[] boardSize) {
+		return new double[] { boardSize[0] / 8, boardSize[1] / 8 };
+	}
+
+	/** Gets the location (of the top left corner) of a particular tile on the
+	 * game board
+	 * 
+	 * @param coord
+	 *            Tile to find location of
+	 * @param tileSize
+	 *            Size of every tile in form {width, height}
+	 * @return Location of tile on the game board in form {width, height} */
+	private static double[] getTileLoc(Coordinate coord, double[] tileSize) {
+		double x = coord.x * tileSize[0];
+		double y = (7 - coord.y) * tileSize[1];
+		return new double[] { x, y };
+	}
+
+	/** Draws a tile of the game board and links up drag handelers and update
+	 * logic.
+	 * 
+	 * @param coord
+	 *            The
+	 * @param location */
+	private void drawTile(Coordinate coord, double[] location) {
+		Pane p = new Pane();
+		p.setPrefSize(tileSize[0], tileSize[1]);
+		Rectangle r = new Rectangle(tileSize[0], tileSize[1]);
+		p.getChildren().add(r);
+		if ((coord.x + coord.y) % 2 == 0) {
+			r.setFill(Color.BLACK);
+		} else {
+			r.setFill(Color.WHITE);
+		}
+		assert (board != null);
+		new TileContent(p, coord, board, tileSize);
+		boardPane.getChildren().add(p);
+		p.setLayoutX(location[0]);
+		p.setLayoutY(location[1]);
 	}
 }

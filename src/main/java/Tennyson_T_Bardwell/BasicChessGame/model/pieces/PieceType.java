@@ -1,4 +1,6 @@
-package Tennyson_T_Bardwell.BasicChessGame.model;
+package Tennyson_T_Bardwell.BasicChessGame.model.pieces;
+
+import Tennyson_T_Bardwell.BasicChessGame.model.Player;
 
 /** @author tbTennyson */
 public enum PieceType {

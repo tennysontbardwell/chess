@@ -2,6 +2,13 @@ package Tennyson_T_Bardwell.BasicChessGame.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+
+import Tennyson_T_Bardwell.BasicChessGame.model.pieces.Piece;
+import Tennyson_T_Bardwell.BasicChessGame.model.pieces.PieceType;
+import static Tennyson_T_Bardwell.BasicChessGame.model.pieces.PieceMoves.*;
+import javafx.beans.property.ObjectPropertyBase;
+import javafx.beans.property.Property;
 
 /** A class for managing the board of a chess game. This includes the history of
  * the board and all the logic of a chess game, and the current state of the
@@ -10,10 +17,41 @@ import java.util.List;
  * @author tbTennyson */
 public class Board {
 	/** Internal representation of the board. Empty locations are represented by
-	 * null. */
-	private Piece[][] board = new Piece[8][8];
-	private List<Turn> history = new ArrayList<>();
-	private Player currentTurn;
+	 * <code>null</code>. */
+	private InternalTile[][] board = new InternalTile[8][8];
+
+	private EnPassant previousEnPassant;
+
+	public Board() {
+		for (int x = 0; x < board.length; x++) {
+			for (int y = 0; y < board[0].length; y++) {
+				board[x][y] = new InternalTile();
+			}
+		}
+	}
+
+	private InternalTile getTile(Coordinate coord) {
+		try {
+			return board[coord.x][coord.y];
+		} catch (ArrayIndexOutOfBoundsException e) {
+			return null;
+		}
+	}
+
+	private boolean isInBoard(Coordinate location) {
+		if (getTile(location) == null)
+			return false;
+		else
+			return true;
+	}
+
+	private Coordinate[] allCoords() {
+		Coordinate[] coords = new Coordinate[64];
+		for (int i = 0; i < 64; i++) {
+			coords[i] = new Coordinate(i / 8, i % 8);
+		}
+		return coords;
+	}
 
 	/** @return the condition of the board if there is a special condition
 	 *         defined in {@link BoardCondition}. Otherwise returns null. */
@@ -22,35 +60,17 @@ public class Board {
 		return null;
 	}
 
-	/** Reverts back to the state of the board <code>numberOfTurns</code> ago.
-	 * 
-	 * <p>
-	 * If <code>numberOfTurns == 0</code> then there will be no change.
-	 * 
-	 * <p>
-	 * If <code>numberOfTurns == 1</code> then the last move by one player will
-	 * be undo.
-	 * 
-	 * <p>
-	 * If <code>numberOfTurns == 2</code> then the last move of both players
-	 * will be undone. etc.
-	 * 
-	 * @param numberOfTurns
-	 *            the number of turns to undo */
-	public void undo(int numberOfTurns) {
-		// TODO
-	}
-
-	/** @return The player who is currently able to make a move. */
-	public Player currentTurn() {
-		return currentTurn;
-	}
-
 	/** @return Creates: An exact copy of this board which shares no
 	 *         dependencies with this instance. */
 	public Board deepClone() {
-		// TODO
-		return null;
+		Board b = new Board();
+		for (Coordinate c : allCoords()) {
+			Piece p = getTile(c).piece();
+			if (p != null) {
+				b.placePiece(c, p.type, p.player);
+			}
+		}
+		return b;
 	}
 
 	/** All moves that all the pieces of <code>Player player</code> can make,
@@ -59,42 +79,41 @@ public class Board {
 	 * 
 	 * @param player
 	 *            The player to consider. Does not require it to be their turn.
-	 * @return The set of <code>moves</code> that <code>Player player</code> can
-	 *         make. If the set is empty than returns <code>null</code>. */
-	private Move[] moves(Player player) {
-		// TODO
-		return null;
+	 * @return The set of <code>move</code> that <code>Player player</code> can
+	 *         make. */
+	private List<Move> moves(Player player) {
+		List<Move> moves = new ArrayList<>();
+		for (Coordinate c : allCoords()) {
+			if (getTile(c).piece.player == player) {
+				moves.addAll(getMoves(this, c));
+			}
+		}
+		return moves;
 	}
 
-	/** All the legal moves that the play who's turn it currently is can make.
+	/** Gets the moves that a piece can make.
 	 * 
-	 * @return The set of all legal moves, or null if that set is empty */
-	public Move[] legalMoves() {
-		// TODO
-		return null;
-	}
-
-	/** Attempts to execute <code>move</code>. If it is a legal move
-	 * (considering CHECK conditions, current player's turn, and the piece in
-	 * question and board conditions) then it is executed and true is returned,
-	 * else nothing happens and false is returned.
-	 * 
-	 * @param move
-	 *            Move to attempt to execute.
-	 * @return true if <code>move</code> is legal. */
-	public boolean makeMove(Move move) {
-		// TODO
-		return false;
+	 * @param location
+	 *            The location of the piece.
+	 * @return All moves that a piece can make, without considering CHECK
+	 *         conditions. */
+	public List<Move> moves(Coordinate location) {
+		return getMoves(this, location);
 	}
 
 	/** Gets the type of piece at a particular location on the board.
 	 * 
 	 * @param location
-	 *            The coordinate on the board to check.
-	 * @return PieceType of the piece, or null if the location is empty. */
-	public PieceType pieceAt(Coordinate location) {
-		// TODO
-		return null;
+	 *            The coordinate on the board to check. <b>Checks:</b>
+	 *            <code>location</code> is a valid tile.
+	 * @return The property of the piece, or null if the location is out of the
+	 *         board. */
+	public Property<Tile> tileProperty(Coordinate location) {
+		InternalTile t = getTile(location);
+		if (t == null)
+			return null;
+		else
+			return t.getObvservableProperty();
 	}
 
 	/** Gets the move on which a piece was last moved.
@@ -103,9 +122,122 @@ public class Board {
 	 * 
 	 * @param location
 	 *            The location of the piece to lookup.
-	 * @return turn number that the piece was last moved */
+	 * @return turn number that the piece was last moved. Returns <code>0</code>
+	 *         if the piece has never been moved. */
 	public int lastMoveOfPieceAt(Coordinate location) {
-		// TODO
-		return -1;
+		return getTile(location).piece.lastMoved;
+	}
+
+	/** Tells the board that a pawn can move to <code>Coordinate c</code> to
+	 * perform an en passant against <code>Player p</code>.
+	 * 
+	 * @param c
+	 * @param p */
+	public void setEnPassant(Coordinate c, Player p) {
+		assert (previousEnPassant == null);
+		previousEnPassant = new EnPassant(c, p);
+	}
+
+	/** Checks if <code>Player p</code> can perform an en passant by moving a
+	 * pawn to <code>Coordinate c</code>.
+	 * 
+	 * @param c
+	 * @param p
+	 * @return True if the player can */
+	public boolean isEnPassant(Coordinate c, Player p) {
+		if (previousEnPassant != null
+				&& previousEnPassant.takableLocation.equals(c)
+				&& previousEnPassant.takablePlayer != p)
+			return true;
+		else
+			return false;
+	}
+
+	/** Puts a piece on the board without any checks. <b>Requires:</b>
+	 * <code>location</code> is in the board.
+	 * 
+	 * @param location
+	 *            <b>Requires:</b> is on the board.
+	 * @param type
+	 * @param player */
+	public void placePiece(Coordinate location, PieceType type, Player player) {
+		Piece piece = new Piece(type, player);
+		assert (isInBoard(location)) : "Tried to put a " + player.name + " "
+				+ type.name + " to " + location.toString();
+		getTile(location).piece(piece);
+	}
+
+	/** Removes the piece at <code>location</code>, if a piece exists.
+	 * 
+	 * @param location
+	 *            The location to remove the piece from */
+	public void removePlace(Coordinate location) {
+		getTile(location).piece(null);
+	}
+
+	private class InternalTile {
+		/** If <code>piece == null</code> then this is an empty tile. */
+		private Piece piece;
+		private Property<Tile> property = null;
+
+		public void piece(Piece piece) {
+			this.piece = piece;
+			if (property != null) {
+				if (piece == null) {
+					property.setValue(null);
+				} else {
+					property.setValue(new Tile(piece.type, piece.player));
+				}
+			}
+		}
+
+		public Piece piece() {
+			return piece;
+		}
+
+		public Property<Tile> getObvservableProperty() {
+			if (property == null) {
+				property = new ObjectPropertyBase<Tile>() {
+
+					@Override
+					public Object getBean() {
+						return Board.this;
+					}
+
+					@Override
+					public String getName() {
+						return "";
+					}
+				};
+				piece(piece());// refreshes to set up observable property
+			}
+			return property;
+		}
+	}
+
+	/** A representation of a tile of the board for distribution outside of the
+	 * board class. {@link Tile#player} and {@link Tile#player} are never
+	 * <code>null</code>, instead an empty tile is represented by a null
+	 * <code>Tile</code> object.
+	 * 
+	 * @author tbTennyson */
+	public class Tile {
+		final public PieceType type;
+		final public Player player;
+
+		public Tile(PieceType type, Player player) {
+			this.type = type;
+			this.player = player;
+		}
+	}
+
+	public class EnPassant {
+		public final Coordinate takableLocation;
+		public final Player takablePlayer;
+
+		public EnPassant(Coordinate takableLocation, Player takablePlayer) {
+			this.takableLocation = takableLocation;
+			this.takablePlayer = takablePlayer;
+		}
 	}
 }

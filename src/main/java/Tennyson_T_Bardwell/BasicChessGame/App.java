@@ -14,8 +14,9 @@ public class App extends Application {
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 		Pane p = new Pane();
+		// p.setPrefSize(1000, 800);
 		MainView.setUpPane(p);
-		Scene scene = new Scene(p);
+		Scene scene = new Scene(p, 1000, 800);
 		primaryStage.setScene(scene);
 		primaryStage.show();
 		p.prefHeightProperty().bind(scene.heightProperty());
