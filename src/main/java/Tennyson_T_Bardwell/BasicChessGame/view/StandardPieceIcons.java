@@ -31,7 +31,7 @@ public class StandardPieceIcons implements PieceImageFactory {
 	@Override
 	public Image blackKnight() {
 		return new Image(
-				getClass().getResourceAsStream(prefix + "BkKight.png"));
+				getClass().getResourceAsStream(prefix + "BkKnight.png"));
 	}
 
 	@Override

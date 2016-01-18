@@ -2,6 +2,8 @@ package Tennyson_T_Bardwell.BasicChessGame.model;
 
 import static Tennyson_T_Bardwell.BasicChessGame.model.Direction.*;
 
+import java.util.HashMap;
+
 import Tennyson_T_Bardwell.BasicChessGame.model.Board.EnPassant;
 import Tennyson_T_Bardwell.BasicChessGame.util.HelperFunctions;
 
@@ -47,6 +49,11 @@ public class Coordinate {
 				return true;
 		}
 		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return x * 1001 + y;
 	}
 
 	@Override

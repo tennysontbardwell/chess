@@ -43,8 +43,7 @@ public class PieceMoves {
 	 *            it returns an empty list.
 	 * @return */
 	public static List<Move> getMoves(Board b, Coordinate c) {
-		if (b.tileProperty(c) == null
-				|| b.tileProperty(c).getValue().player == null) {
+		if (b.tileProperty(c) == null || b.tileProperty(c).getValue() == null) {
 			return new ArrayList<>(0);
 		}
 		Tile t = b.tileProperty(c).getValue();
@@ -78,7 +77,7 @@ public class PieceMoves {
 	}
 
 	private void kingMoves() {
-		assert(classInvariant());
+		assert (classInvariant());
 		for (Direction d : MapDirection.getAll(null)) {
 			Coordinate newC = c.performMovement(d, p, 1);
 			Property<Tile> t = b.tileProperty(newC);
@@ -92,40 +91,40 @@ public class PieceMoves {
 		}
 
 		// TODO castling
-		assert(classInvariant());
+		assert (classInvariant());
 	}
 
 	private void queenMoves() {
-		assert(classInvariant());
+		assert (classInvariant());
 		rookMoves();
 		bishopMoves();
-		assert(classInvariant());
+		assert (classInvariant());
 	}
 
 	private void rookMoves() {
-		assert(classInvariant());
+		assert (classInvariant());
 		for (Direction d : MapDirection.getAll(ROOKLIKE)) {
 			getMovesInDir(d);
 		}
-		assert(classInvariant());
+		assert (classInvariant());
 	}
 
 	private void knightMoves() {
-		assert(classInvariant());
+		assert (classInvariant());
 		// TODO
-		assert(classInvariant());
+		assert (classInvariant());
 	}
 
 	private void bishopMoves() {
-		assert(classInvariant());
+		assert (classInvariant());
 		for (Direction d : MapDirection.getAll(BISHOPLIKE)) {
 			getMovesInDir(d);
 		}
-		assert(classInvariant());
+		assert (classInvariant());
 	}
 
 	private void pawnMoves() {
-		assert(classInvariant());
+		assert (classInvariant());
 		// ****forward march
 		Direction dForw = Direction.get(MapDirection.NORTH);
 		Coordinate forw = c.performMovement(dForw, p, 1);
@@ -163,11 +162,11 @@ public class PieceMoves {
 				}
 			}
 		}
-		assert(classInvariant());
+		assert (classInvariant());
 	}
 
 	private void getMovesInDir(Direction d) {
-		assert(classInvariant());
+		assert (classInvariant());
 		for (int i = 1;; i++) {
 			Coordinate coord = c.performMovement(d, p, i);
 			Property<Tile> t = b.tileProperty(coord);
@@ -186,6 +185,6 @@ public class PieceMoves {
 				break;
 			}
 		}
-		assert(classInvariant());
+		assert (classInvariant());
 	}
 }

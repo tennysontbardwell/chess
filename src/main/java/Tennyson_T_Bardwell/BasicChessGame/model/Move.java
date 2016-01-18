@@ -3,6 +3,7 @@ package Tennyson_T_Bardwell.BasicChessGame.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import Tennyson_T_Bardwell.BasicChessGame.model.Board.Tile;
 import Tennyson_T_Bardwell.BasicChessGame.model.pieces.PieceType;
 
 /** Represents all the changes to the board in a single turn, excluding pawn
@@ -17,11 +18,37 @@ public class Move {
 		if (c.length % 2 == 1 || c.length == 0)
 			throw new IllegalArgumentException();
 		for (int i = 0; i < c.length; i += 2) {
-			SingleMove sm = new SingleMove();
-			sm.start = c[i];
-			sm.end = c[i + 1];
+			SingleMove sm = new SingleMove(c[i], c[i + 1]);
 			moves.add(sm);
 		}
+	}
+
+	/** <b>Modifies:</b> the board as though this move was applied to it.
+	 * 
+	 * @param b */
+	public void apply(Board b) {
+		for (SingleMove sm : moves) {
+			Player p;
+			PieceType ty;
+			if (sm.start != null) {
+				Tile t = b.tileProperty(sm.start).getValue();
+				if (t == null) {
+					throw new IllegalArgumentException();
+				}
+				p = t.player;
+				ty = t.type;
+				b.removePlace(sm.start);
+			}
+			else {
+				p = sm.player;
+				ty = sm.type;
+			}
+			b.placePiece(sm.end, ty, p);
+		}
+	}
+
+	public SingleMove[] moves() {
+		return moves.toArray(new SingleMove[1]);
 	}
 
 	/** Representation of a single move on the board where either a piece moves
@@ -31,9 +58,24 @@ public class Move {
 	 * 
 	 * @author tbTennyson */
 	public class SingleMove {
-		Coordinate start;
-		Coordinate end;
-		PieceType type;
+		public final Coordinate start;
+		public final Coordinate end;
+		public final PieceType type;
+		public final Player player;
+
+		private SingleMove(Coordinate start, Coordinate end) {
+			this.start = start;
+			this.end = end;
+			this.type = null;
+			this.player = null;
+		}
+
+		private SingleMove(Coordinate end, PieceType type, Player player) {
+			this.end = end;
+			this.start = null;
+			this.type = type;
+			this.player = player;
+		}
 	}
 
 	@Override
@@ -41,7 +83,7 @@ public class Move {
 		StringBuilder sb = new StringBuilder();
 		sb.append("{ ");
 		boolean isFirst = true;
-		assert(moves != null);
+		assert (moves != null);
 		for (SingleMove sm : moves) {
 			if (isFirst) {
 				isFirst = false;

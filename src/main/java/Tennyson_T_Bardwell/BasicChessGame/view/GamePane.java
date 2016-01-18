@@ -1,19 +1,23 @@
 package Tennyson_T_Bardwell.BasicChessGame.view;
 
+import java.util.List;
+
 import Tennyson_T_Bardwell.BasicChessGame.model.Board;
-import Tennyson_T_Bardwell.BasicChessGame.model.Board.Tile;
 import Tennyson_T_Bardwell.BasicChessGame.model.Coordinate;
-import javafx.beans.property.Property;
-import javafx.scene.Group;
+import Tennyson_T_Bardwell.BasicChessGame.model.Move;
+import Tennyson_T_Bardwell.BasicChessGame.model.Move.SingleMove;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
 
 public class GamePane {
 	private Pane primaryPane;
 	private Board board;
 	private Pane boardPane;
+	private HighlightMap high;
+	private Coordinate selected;
+	private List<Move> selectedMoves;
 
 	private double[] boardSize;
 	private double[] tileSize;
@@ -22,6 +26,7 @@ public class GamePane {
 		assert (board != null);
 		this.board = board;
 		this.primaryPane = primaryPane;
+		high = new HighlightMap();
 		setUpGame();
 		primaryPane.widthProperty().addListener(e -> setUpGame());
 		primaryPane.heightProperty().addListener(e -> setUpGame());
@@ -113,18 +118,77 @@ public class GamePane {
 	 * @param location */
 	private void drawTile(Coordinate coord, double[] location) {
 		Pane p = new Pane();
+		addMouseInteractions(p, coord);
 		p.setPrefSize(tileSize[0], tileSize[1]);
 		Rectangle r = new Rectangle(tileSize[0], tileSize[1]);
 		p.getChildren().add(r);
 		if ((coord.x + coord.y) % 2 == 0) {
-			r.setFill(Color.BLACK);
+			r.setFill(Color.SLATEGREY);
+			high.notifyOnChange(() -> {
+				if (high.isHighlighted(coord)) {
+					r.setFill(Color.GREY);
+				} else {
+					r.setFill(Color.SLATEGREY);
+				}
+			});
 		} else {
 			r.setFill(Color.WHITE);
+			high.notifyOnChange(() -> {
+				if (high.isHighlighted(coord)) {
+					r.setFill(Color.ALICEBLUE);
+				} else {
+					r.setFill(Color.WHITE);
+				}
+			});
 		}
 		assert (board != null);
-		new TileContent(p, coord, board, tileSize);
+		new TileContent(p, board.tileProperty(coord), tileSize);
 		boardPane.getChildren().add(p);
 		p.setLayoutX(location[0]);
 		p.setLayoutY(location[1]);
+	}
+
+	private void addMouseInteractions(Pane p, Coordinate c) {
+		p.setOnMouseClicked(e -> {
+			if (selected == null) {
+				// selects this one
+				List<Move> moves = board.moves(c);
+				selectedMoves = moves;
+				if (moves.size() > 0) {
+					selected = c;
+				}
+				for (Move m : moves) {
+					for (SingleMove sm : m.moves()) {
+						if (sm.start.equals(c)) {
+							high.highlight(sm.end);
+						}
+					}
+				}
+			} else if (high.isHighlighted(c)) {
+				// executes move
+				boolean foundMove = false;
+				for (Move m : selectedMoves) {
+					for (SingleMove sm : m.moves()) {
+						if (sm.start.equals(selected) && sm.end.equals(c)) {
+							foundMove = true;
+							break;
+						}
+					}
+					if (foundMove) {
+						m.apply(board);
+						break;
+					}
+				}
+				assert (foundMove);
+				selected = null;
+				selectedMoves = null;
+				high.clear();
+			} else {
+				// clear selection
+				high.clear();
+				selected = null;
+				selectedMoves = null;
+			}
+		});
 	}
 }
