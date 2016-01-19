@@ -2,8 +2,8 @@ package Tennyson_T_Bardwell.BasicChessGame.view;
 
 import static Tennyson_T_Bardwell.BasicChessGame.util.JavaFXHelper.setToParentDimensions;
 
-import Tennyson_T_Bardwell.BasicChessGame.model.Board;
 import Tennyson_T_Bardwell.BasicChessGame.model.BoardBuilder;
+import Tennyson_T_Bardwell.BasicChessGame.model.ChessGame;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
@@ -33,8 +33,7 @@ public class MainView {
 			game.prefHeightProperty()
 					.bind(v.heightProperty().subtract(bar.heightProperty()));
 			v.getChildren().add(game);
-			Board b = BoardBuilder.getDefaultBoard();
-			new GamePane(game, b);
+			new GamePane(game, new ChessGame());
 		}
 	}
 }

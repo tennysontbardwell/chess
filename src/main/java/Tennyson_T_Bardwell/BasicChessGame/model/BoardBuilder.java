@@ -1,7 +1,5 @@
 package Tennyson_T_Bardwell.BasicChessGame.model;
 
-import Tennyson_T_Bardwell.BasicChessGame.model.pieces.PieceType;
-
 public class BoardBuilder {
 	public static Board getDefaultBoard() {
 		Board b = new Board();
@@ -32,7 +30,7 @@ public class BoardBuilder {
 		} else {
 			king = new Coordinate(4, 7);
 		}
-		b.placePiece(king, PieceType.KING, player);
+		b.placePiece(king, PieceType.KING, player, 0);
 		// queen
 		Coordinate queen;
 		if (player == Player.WHITE) {
@@ -40,13 +38,13 @@ public class BoardBuilder {
 		} else {
 			queen = new Coordinate(3, 7);
 		}
-		b.placePiece(queen, PieceType.QUEEN, player);
+		b.placePiece(queen, PieceType.QUEEN, player, 0);
 	}
 
 	private static void place(Board b, PieceType type, Player p, Coordinate c) {
 		if (p == Player.BLACK)
 			c = flipCoordiante(c);
-		b.placePiece(c, type, p);
+		b.placePiece(c, type, p, 0);
 	}
 
 	private static void placeWithMirror(Board b, PieceType type, Player p,

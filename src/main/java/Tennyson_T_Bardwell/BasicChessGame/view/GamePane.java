@@ -2,10 +2,9 @@ package Tennyson_T_Bardwell.BasicChessGame.view;
 
 import java.util.List;
 
-import Tennyson_T_Bardwell.BasicChessGame.model.Board;
+import Tennyson_T_Bardwell.BasicChessGame.model.ChessGame;
 import Tennyson_T_Bardwell.BasicChessGame.model.Coordinate;
-import Tennyson_T_Bardwell.BasicChessGame.model.Move;
-import Tennyson_T_Bardwell.BasicChessGame.model.Move.SingleMove;
+import Tennyson_T_Bardwell.BasicChessGame.model.MoveOption;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
@@ -13,18 +12,17 @@ import javafx.scene.shape.Rectangle;
 
 public class GamePane {
 	private Pane primaryPane;
-	private Board board;
+	private ChessGame game;
 	private Pane boardPane;
 	private HighlightMap high;
 	private Coordinate selected;
-	private List<Move> selectedMoves;
+	private List<MoveOption> selectedMoves;
 
 	private double[] boardSize;
 	private double[] tileSize;
 
-	public GamePane(Pane primaryPane, Board board) {
-		assert (board != null);
-		this.board = board;
+	public GamePane(Pane primaryPane, ChessGame game) {
+		this.game = game;
 		this.primaryPane = primaryPane;
 		high = new HighlightMap();
 		setUpGame();
@@ -126,7 +124,7 @@ public class GamePane {
 			r.setFill(Color.SLATEGREY);
 			high.notifyOnChange(() -> {
 				if (high.isHighlighted(coord)) {
-					r.setFill(Color.GREY);
+					r.setFill(Color.GREEN);
 				} else {
 					r.setFill(Color.SLATEGREY);
 				}
@@ -135,14 +133,13 @@ public class GamePane {
 			r.setFill(Color.WHITE);
 			high.notifyOnChange(() -> {
 				if (high.isHighlighted(coord)) {
-					r.setFill(Color.ALICEBLUE);
+					r.setFill(Color.LIGHTGREEN);
 				} else {
 					r.setFill(Color.WHITE);
 				}
 			});
 		}
-		assert (board != null);
-		new TileContent(p, board.tileProperty(coord), tileSize);
+		new TileContent(p, game.tileProperty(coord), tileSize);
 		boardPane.getChildren().add(p);
 		p.setLayoutX(location[0]);
 		p.setLayoutY(location[1]);
@@ -152,37 +149,27 @@ public class GamePane {
 		p.setOnMouseClicked(e -> {
 			if (selected == null) {
 				// selects this one
-				List<Move> moves = board.moves(c);
+				List<MoveOption> moves = game.legalMoves(c);
 				selectedMoves = moves;
 				if (moves.size() > 0) {
 					selected = c;
 				}
-				for (Move m : moves) {
-					for (SingleMove sm : m.moves()) {
-						if (sm.start.equals(c)) {
-							high.highlight(sm.end);
-						}
+				for (MoveOption m : moves) {
+					if (m.start().equals(c)) {
+						high.highlight(m.end());
 					}
 				}
 			} else if (high.isHighlighted(c)) {
 				// executes move
-				boolean foundMove = false;
-				for (Move m : selectedMoves) {
-					for (SingleMove sm : m.moves()) {
-						if (sm.start.equals(selected) && sm.end.equals(c)) {
-							foundMove = true;
-							break;
-						}
-					}
-					if (foundMove) {
-						m.apply(board);
+				for (MoveOption m : selectedMoves) {
+					if (m.end().equals(c)) {
+						game.makeMove(m);
+						selected = null;
+						selectedMoves = null;
+						high.clear();
 						break;
 					}
 				}
-				assert (foundMove);
-				selected = null;
-				selectedMoves = null;
-				high.clear();
 			} else {
 				// clear selection
 				high.clear();

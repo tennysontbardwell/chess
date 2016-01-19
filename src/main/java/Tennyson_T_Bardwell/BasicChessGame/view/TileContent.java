@@ -1,6 +1,6 @@
 package Tennyson_T_Bardwell.BasicChessGame.view;
 
-import Tennyson_T_Bardwell.BasicChessGame.model.Board.Tile;
+import Tennyson_T_Bardwell.BasicChessGame.model.Tile;
 import Tennyson_T_Bardwell.BasicChessGame.model.Player;
 import javafx.beans.property.Property;
 import javafx.scene.image.Image;
