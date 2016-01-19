@@ -107,7 +107,7 @@ class Board {
 	 * @param c
 	 *            The location the player is trying to get to
 	 * @return True if a single move can get that player there. */
-	private boolean canGetTo(Player p, Coordinate c) {
+	public boolean canGetTo(Player p, Coordinate c) {
 		for (MoveOption m : moves(p)) {
 			if (m.end().equals(c)) {
 				return true;

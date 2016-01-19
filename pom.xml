@@ -4,7 +4,7 @@
 
   <groupId>Tennyson-T-Bardwell</groupId>
   <artifactId>BasicChessGame</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>0.2</version>
   <packaging>jar</packaging>
 
   <name>BasicChessGame</name>
@@ -30,6 +30,18 @@
         <configuration>
           <source>1.8</source>
           <target>1.8</target>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifest>
+              <addClasspath>true</addClasspath>
+              <mainClass>Tennyson_T_Bardwell.BasicChessGame.App</mainClass>
+            </manifest>
+          </archive>
         </configuration>
       </plugin>
   	</plugins>

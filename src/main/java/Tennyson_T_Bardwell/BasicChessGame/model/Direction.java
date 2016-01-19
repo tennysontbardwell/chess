@@ -25,6 +25,16 @@ public class Direction {
 		this.y = y;
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof Direction) {
+			Direction other = (Direction) obj;
+			if (other.x == x && other.y == y)
+				return true;
+		}
+		return false;
+	}
+
 	public static Direction get(MapDirection m) {
 		switch (m) {
 		case EAST:

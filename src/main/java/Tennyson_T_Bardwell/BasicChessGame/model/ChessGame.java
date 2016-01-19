@@ -98,8 +98,15 @@ public class ChessGame {
 		m.apply(alt, history.size() + 1);
 		if (alt.canGetToKing(turnPlayer.getOther()))
 			return false;
-		else
+		// checks additional tiles for legality
+		Coordinate[] check = m.check();
+		if (check == null)
 			return true;
+		for (Coordinate c : check) {
+			if (board.canGetTo(turnPlayer.getOther(), c))
+				return false;
+		}
+		return true;
 	}
 
 	/** Does the same as {@link Board#tileProperty(Coordinate)} */

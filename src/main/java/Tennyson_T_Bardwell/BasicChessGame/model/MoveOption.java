@@ -8,6 +8,7 @@ package Tennyson_T_Bardwell.BasicChessGame.model;
 public class MoveOption implements Move {
 	private final SingleMove main;
 	private Move[] aux;// Auxiliary moves
+	private Coordinate[] check;// coords to check for CHECK, for castling
 
 	/** Creates a new move comprised only of start ==> end movements.
 	 *
@@ -52,6 +53,14 @@ public class MoveOption implements Move {
 		return m;
 	}
 
+	public static MoveOption castle(Coordinate kingStart, Coordinate kingEnd,
+			Coordinate rookStart, Coordinate rookEnd) {
+		MoveOption m = new MoveOption(kingStart, kingEnd);
+		m.aux = new Move[] { new SingleMove(rookStart, rookEnd) };
+		m.check = new Coordinate[] { kingStart, rookEnd, kingEnd };
+		return m;
+	}
+
 	/** Gets the (start) primary coordinate associated with this move option,
 	 * from which the user would initiate picking this move option.
 	 * 
@@ -66,6 +75,18 @@ public class MoveOption implements Move {
 	 * @return The start coordinate */
 	public Coordinate end() {
 		return main.end;
+	}
+
+	/** If this is a castle move, then there are addition tiles that have to be
+	 * checked for danger
+	 * 
+	 * @return Additional coordinates that must be checked for danger if this
+	 *         move is to be declared legal, or null if none exist */
+	public Coordinate[] check() {
+		if (check == null)
+			return null;
+		else
+			return check.clone();
 	}
 
 	@Override

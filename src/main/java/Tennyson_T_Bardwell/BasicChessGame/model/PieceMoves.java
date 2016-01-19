@@ -7,6 +7,7 @@ import javafx.beans.property.Property;
 
 import static Tennyson_T_Bardwell.BasicChessGame.model.Direction.DirectionKind.*;
 import static Tennyson_T_Bardwell.BasicChessGame.model.Direction.*;
+import static Tennyson_T_Bardwell.BasicChessGame.model.Direction.MapDirection.*;
 import Tennyson_T_Bardwell.BasicChessGame.model.MoveOption;
 
 public class PieceMoves {
@@ -85,9 +86,46 @@ public class PieceMoves {
 				moves.add(new MoveOption(c, newC));
 			}
 		}
-
-		// TODO castling
+		// castling
+		if (b.lastMoveOfPieceAt(c) == 0) {
+			Direction l = Direction.get(WEST);
+			Coordinate lRook = castleGetRookLoc(l);
+			if (b.lastMoveOfPieceAt(c) == 0) {
+				if (checkCastlingIntermediateSpace(c, lRook, l)) {
+					Coordinate kingEnd = c.performMovement(l, p, 2);
+					Coordinate rookEnd = c.performMovement(l, p, 1);
+					moves.add(MoveOption.castle(c, kingEnd, lRook, rookEnd));
+				}
+			}
+			Direction r = Direction.get(EAST);
+			Coordinate rRook = castleGetRookLoc(r);
+			if (b.lastMoveOfPieceAt(rRook) == 0) {
+				if (checkCastlingIntermediateSpace(c, rRook, r)) {
+					Coordinate kingEnd = c.performMovement(r, p, 2);
+					Coordinate rookEnd = c.performMovement(r, p, 1);
+					moves.add(MoveOption.castle(c, kingEnd, rRook, rookEnd));
+				}
+			}
+		}
 		assert (classInvariant());
+	}
+
+	private Coordinate castleGetRookLoc(Direction d) {
+		if (p == Player.WHITE ^ d.equals(Direction.get(WEST))) {
+			return new Coordinate(7, c.y);
+		} else {
+			return new Coordinate(0, c.y);
+		}
+	}
+
+	private boolean checkCastlingIntermediateSpace(Coordinate start,
+			Coordinate end, Direction d) {
+		for (Coordinate c = start.performMovement(d, p, 1); !c.equals(end); c =
+				c.performMovement(d, p, 1)) {
+			if (b.tileProperty(c).getValue() != null)
+				return false;
+		}
+		return true;
 	}
 
 	private void queenMoves() {
