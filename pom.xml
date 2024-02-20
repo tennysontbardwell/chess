@@ -21,16 +21,42 @@
       <version>3.8.1</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.openjfx</groupId>
+      <artifactId>javafx-controls</artifactId>
+      <version>11</version>
+    </dependency>
   </dependencies>
   <build>
   	<plugins>
   	  <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.8.0</version>
         <configuration>
-          <source>1.8</source>
-          <target>1.8</target>
+          <release>11</release>
         </configuration>
+      </plugin>
+      <plugin>
+          <groupId>org.openjfx</groupId>
+          <artifactId>javafx-maven-plugin</artifactId>
+          <version>0.0.8</version>
+          <configuration>
+              <mainClass>Tennyson_T_Bardwell.BasicChessGame.App</mainClass>
+          </configuration>
+      </plugin>
+      <plugin>
+          <artifactId>maven-assembly-plugin</artifactId>
+          <configuration>
+              <archive>
+                  <manifest>
+                      <mainClass>Tennyson_T_Bardwell.BasicChessGame.Laucher</mainClass>
+                  </manifest>
+              </archive>
+              <descriptorRefs>
+                  <descriptorRef>jar-with-dependencies</descriptorRef>
+              </descriptorRefs>
+          </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -39,7 +65,7 @@
           <archive>
             <manifest>
               <addClasspath>true</addClasspath>
-              <mainClass>Tennyson_T_Bardwell.BasicChessGame.App</mainClass>
+              <mainClass>Tennyson_T_Bardwell.BasicChessGame.Laucher</mainClass>
             </manifest>
           </archive>
         </configuration>
